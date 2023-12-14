@@ -101,7 +101,7 @@ router.post('/AssignStuToClass', midway.checkTokenForTeacher,(req, res) => {
 })
 router.post('/getClassMatesOfStu',midway.checkTokenForTeacher, (req, res) => {
     const { student_id } = req.body;
-    connection.query(`SELECT s.name as StudentName FROM student s JOIN assign_class sc ON s.id = sc.student_id JOIN class c ON sc.class_id = c.id WHERE sc.student_id != '${student_id}' GROUP by s.id;`, (err, result) => {
+    connection.query(`SELECT s.name as StudentName FROM student s JOIN assign_class sc ON s.id = sc.student_id JOIN class c ON sc.class_id = c.id  GROUP by s.id;`, (err, result) => {
         if (err) {
             res.json({ err: err })
         } else {
