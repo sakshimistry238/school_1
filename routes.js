@@ -101,28 +101,34 @@ router.post('/AssignStuToClass', midway.checkTokenForTeacher,(req, res) => {
 })
 router.post('/getClassMatesOfStu',midway.checkTokenForTeacher, (req, res) => {
     const { student_id } = req.body;
-    connection.query(`SELECT s.name as StudentName FROM student s JOIN assign_class sc ON s.id = sc.student_id JOIN class c ON sc.class_id = c.id  GROUP by s.id;`, (err, result) => {
-        if (err) {
-            res.json({ err: err })
-        } else {
-            console.log(result);
-            res.status(200).json({ data: result })
-        }
+    connection.query(`SELECT a.class_id FROM student s join assign_class a on s.id = a.student_id where s.id = '${student_id}';`,(err,result)=>{
+        let classIds = result.map(obj => obj.class_id);
+        console.log(classIds,"ij");
+        connection.query(`select s.name from assign_class a left join student s on a.student_id = s.id where a.class_id In (${classIds}) group by s.id;`, (err, result) => {
+            if (err) {
+                res.json({ err: err })
+            } else {
+                console.log(result);
+                res.status(200).json({ data: result })
+            }
+        })
     })
+    
 })
 router.get('/getStudentOfAllClass',midway.checkTokenForTeacher, (req, res) => {
-    const { student_id } = req.body;
-    connection.query(`SELECT c.id AS class_id, c.name AS class_name, s.name AS student_name
-    FROM class c
-    JOIN assign_class a ON c.id = a.class_id
-    JOIN student s ON s.id = a.student_id
-    WHERE a.class_id IN (SELECT id FROM class);`, (err, result) => {
-        if (err) {
-            res.json({ err: err })
-        } else {
-            console.log(result);
-            res.status(200).json({ data: result })
-        }
+    connection.query(`select id from class`,(err,result)=>{
+        console.log(result);
+        let classIds = result.map(obj => obj.id);
+        console.log(classIds);
+        connection.query(`select s.name from assign_class a left join student s on a.student_id = s.id where class_id In('${classIds}') group by s.id;`, (err, result) => {
+            if (err) {
+                res.json({ err: err })
+            } else {
+                console.log(result);
+                res.status(200).json({ data: result })
+            }
+        })
     })
+   
 })
 module.exports = router;
